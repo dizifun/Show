@@ -1,9 +1,9 @@
 name: Gain Scraper
 
 on:
-  workflow_dispatch: # Manuel çalıştırmak için
+  workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *' # Her gece çalışır
+    - cron: '0 0 * * *'
 
 permissions:
   contents: write
@@ -22,8 +22,7 @@ jobs:
         python-version: '3.9'
 
     - name: Kütüphaneleri Yükle
-      run: |
-        pip install -r requirements.txt
+      run: pip install requests
 
     - name: Botu Çalıştır
       run: python main.py
@@ -32,6 +31,11 @@ jobs:
       run: |
         git config --global user.name "GainBot"
         git config --global user.email "bot@github.com"
-        git add gain_data.json
-        git commit -m "Otomatik veri güncellemesi" || echo "Değişiklik yok"
-        git push
+        # Dosya varsa ekle, yoksa hata verme
+        if [ -f gain_data.json ]; then
+          git add gain_data.json
+          git commit -m "Veriler güncellendi" || echo "Değişiklik yok"
+          git push
+        else
+          echo "gain_data.json bulunamadı, commit atlanıyor."
+        fi
