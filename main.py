@@ -1,22 +1,18 @@
 import requests
 import json
-import os
 import time
 
-# --- AYARLAR ---
-# GitHub Secret'lardan gelecek bilgiler
-EMAIL = os.environ.get("GAIN_EMAIL")
-PASSWORD = os.environ.get("GAIN_PASSWORD")
+# --- BİLGİLERİ BURAYA AÇIK AÇIK YAZIYORUZ ---
+EMAIL = "fatmanurrkrkmzz186@gmail.com"
+PASSWORD = "Lordmaster5557."  # <-- Şifreni tırnakların içine yaz
 
-# Senin bulduğun Proje ID
+# Proje ID (Senin bulduğun)
 PROJECT_ID = "2da7kf8jf"
 
-# API URL'LERİ (Senin verdiğin yeni linkler)
-# Giriş URL'si
+# API URL'LERİ
 LOGIN_URL = f"https://api.gain.tv/{PROJECT_ID}/CALL/User/signin?__culture=tr-tr"
 
-# Video Detay URL'si (Tahmini yapıdır, çalışmazsa Network'ten 'GetClientContent'i bulmalısın)
-# Gain'in bu altyapısında genellikle video detayları bu adrese sorulur:
+# Video Detay URL'si
 CONTENT_URL = f"https://api.gain.tv/{PROJECT_ID}/CALL/Media/GetClientContent?__culture=tr-tr"
 
 # Tarayıcı gibi görünmek için Header
@@ -30,10 +26,9 @@ def login():
     """Sisteme giriş yapıp Token alır"""
     print("🔑 Giriş yapılıyor...")
     
-    # Gain'in bu versiyonunda payload yapısı genellikle böyledir:
     payload = {
         "Request": {
-            "Email": EMAIL,     # Bazen "UserName" veya "Email" olabilir
+            "Email": EMAIL,
             "Password": PASSWORD
         }
     }
@@ -43,35 +38,29 @@ def login():
         
         if response.status_code == 200:
             data = response.json()
-            # Yanıt başarılı mı kontrol et
             if data.get("Success"):
-                # Token genellikle Result -> Token içindedir
                 result = data.get("Result", {})
                 token = result.get("Token") or result.get("AccessToken")
                 print(f"✅ Giriş başarılı! Token alındı.")
                 return token
             else:
-                print(f"❌ Giriş başarısız (API Hatası): {data.get('Message')}")
+                print(f"❌ Giriş başarısız (API Mesajı): {data.get('Message')}")
                 return None
         else:
             print(f"❌ Sunucu Hatası: {response.status_code}")
             return None
     except Exception as e:
-        print(f"⚠️ Kritik Hata: {e}")
+        print(f"⚠️ Hata: {e}")
         return None
 
 def get_video_details(video_id, token):
     """Tek bir videonun detaylarını çeker"""
-    
-    # Bu altyapıda genellikle POST isteği ile detay sorulur
     payload = {
         "Request": {
             "MediaId": video_id,
             "IncludeOpencast": True
         }
     }
-    
-    # Token'ı Header'a ekle
     auth_headers = HEADERS.copy()
     auth_headers["Authorization"] = f"Bearer {token}"
     
@@ -80,50 +69,44 @@ def get_video_details(video_id, token):
         if response.status_code == 200:
             data = response.json()
             if data.get("Success"):
-                print(f"✅ {video_id} verisi başarıyla çekildi.")
-                return data.get("Result") # Sadece video detay kısmını döndür
+                print(f"✅ {video_id} verisi çekildi.")
+                return data.get("Result")
             else:
-                print(f"❌ {video_id} verisi alınamadı: {data.get('Message')}")
+                print(f"❌ {video_id} alınamadı.")
                 return None
         else:
-            print(f"❌ HTTP Hatası ({video_id}): {response.status_code}")
+            print(f"❌ HTTP Hatası: {response.status_code}")
             return None
     except Exception as e:
         print(f"Hata: {e}")
         return None
 
 def main():
-    if not EMAIL or not PASSWORD:
-        print("❌ E-posta veya Şifre bulunamadı! GitHub Secrets ayarlarını kontrol et.")
-        return
-
     # 1. Giriş Yap
     token = login()
     if not token:
+        print("Token alınamadığı için işlem durduruldu.")
         return
 
-    # 2. Çekilecek Videoları Belirle
-    # BURASI ÖNEMLİ: Şimdilik sadece senin bildiğin ID'yi çekiyoruz.
-    # 1. Adımdaki "Liste URL'sini" bulduğunda buraya tüm listeyi çeken kodu ekleyeceğiz.
+    # 2. Videoları Çek
+    # Buraya test için senin videonu yazdım.
+    # Tüm listeyi bulduğumuzda burayı güncelleyeceğiz.
     target_ids = ["EFQ3X5f4"] 
     
     all_data = []
-
-    print(f"\n🚀 {len(target_ids)} adet video taranacak...")
+    print(f"\n🚀 {len(target_ids)} adet video taranıyor...")
 
     for vid in target_ids:
         data = get_video_details(vid, token)
         if data:
             all_data.append(data)
-        time.sleep(1) # Hız sınırı
+        time.sleep(1) 
 
-    # 3. Veriyi Kaydet
+    # 3. Kaydet
     if all_data:
         with open("gain_data.json", "w", encoding="utf-8") as f:
             json.dump(all_data, f, indent=4, ensure_ascii=False)
-        print("\n🏁 İşlem tamamlandı. 'gain_data.json' dosyası oluşturuldu.")
-    else:
-        print("\n⚠️ Hiçbir veri çekilemedi.")
+        print("\n🏁 İşlem tamam. 'gain_data.json' dosyası oluşturuldu.")
 
 if __name__ == "__main__":
     main()
