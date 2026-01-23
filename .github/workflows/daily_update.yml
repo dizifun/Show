@@ -1,0 +1,39 @@
+name: Playlist Güncelleyici
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # Her gün sabah 06:00'da çalışır
+  workflow_dispatch: # Manuel tetikleme butonu ekler
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Repoya yazma izni verir
+
+    steps:
+      - name: Repoyu Çek
+        uses: actions/checkout@v3
+
+      - name: Python Kurulumu
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Bağımlılıkları Yükle
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Scripti Çalıştır
+        run: python converter.py
+
+      - name: Değişiklikleri Kaydet ve Pushla
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add output/*
+          # Eğer değişiklik yoksa hata verme, varsa commit at
+          git commit -m "Otomatik Güncelleme: $(date +'%Y-%m-%d')" || exit 0
+          git push
+          
