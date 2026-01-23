@@ -5,7 +5,7 @@ import time
 # --- BİLGİLERİNİ BURAYA YAZ ---
 EMAIL = "fatmanurrkrkmzz186@gmail.com"
 # Şifreni tırnakların içine yaz (Boşluk bırakma!)
-PASSWORD = "BURAYA_SIFRENI_YAZ"
+PASSWORD = "Lordmaster5557."
 
 # API URL'LERİ (Basit ve çalışan yapıya döndük)
 LOGIN_URL = "https://api.gain.tv/auth/signin"
