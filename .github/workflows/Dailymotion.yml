@@ -2,9 +2,12 @@ name: Update M3U Playlist
 
 on:
   schedule:
-    # Her 4 saatte bir çalıştır (Tokenlar ölmesin diye)
-    - cron: '0 */4 * * *'
-  workflow_dispatch: # Manuel tetikleme butonu ekler
+    - cron: '0 */4 * * *' # Her 4 saatte bir
+  workflow_dispatch:
+
+# 👇 BURASI ÇOK ÖNEMLİ: İZİN BLOĞU EKLENDİ
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -32,6 +35,5 @@ jobs:
         git config --global user.name 'GitHub Actions Bot'
         git config --global user.email 'actions@github.com'
         git add playlist.m3u
-        # Eğer değişiklik yoksa hata verme
         git commit -m "🚀 Playlist güncellendi: $(date)" || exit 0
         git push
