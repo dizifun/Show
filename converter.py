@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 
 # Hedef URL
-SOURCE_URL = "https://raw.githubusercontent.com/9850392751/99456571/main/736519378"
+SOURCE_URL = "https://mobilapiv2.kanald.com.tr/api/kanald/filter?query=App/DiscoverScreen&filterDiscover=Ancestors/any(a:%20a/SelfPath%20eq%20%27/diziler/arsiv/%27)%20and%20ContentType%20eq%20%27SerieContainer%27&order=Title%20asc&skip=0&top=15"
 
 # Scriptin veriyi çekerken kullanacağı başlıklar (GitHub vs. engellemesin diye)
 FETCH_HEADERS = {
