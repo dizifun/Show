@@ -3,7 +3,7 @@ import os
 import datetime
 
 # Hedef Playlist ve Çıktı Dosyası
-PLAYLIST_URL = "https://www.dailymotion.com/playlist/x72eij"
+PLAYLIST_URL = "https://www.dailymotion.com/playlist/x4r7h6"
 OUTPUT_FILE = "playlist.m3u"
 
 def get_stream_link(video_url):
