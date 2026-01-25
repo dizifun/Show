@@ -1,75 +1,44 @@
 import yt_dlp
-import os
-import datetime
+import json
 
-# Hedef Playlist ve Çıktı Dosyası
-PLAYLIST_URL = "https://www.dailymotion.com/playlist/x4r7h6"
-OUTPUT_FILE = "playlist.m3u"
-
-def get_stream_link(video_url):
-    """Tek bir videonun en iyi m3u8 linkini çeker."""
+def get_ok_ru_m3u8(url):
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
-        'format': 'best',
-    }
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=False)
-            return info.get('url'), info.get('title')
-    except Exception:
-        return None, None
-
-def generate_m3u():
-    """Playlisti tarar ve dosyayı oluşturur."""
-    print("🔄 Playlist taranıyor...")
-    
-    # Playlist içindeki videoların listesini al (detaylara girmeden)
-    ydl_opts_list = {
-        'quiet': True,
-        'extract_flat': True, # Hızlı tarama için
-        'ignoreerrors': True,
+        'format': 'best'  # En yüksek kaliteyi hedefle
     }
     
-    entries = []
-    with yt_dlp.YoutubeDL(ydl_opts_list) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
-            result = ydl.extract_info(PLAYLIST_URL, download=False)
-            if 'entries' in result:
-                entries = result['entries']
+            info = ydl.extract_info(url, download=False)
+            # Ok.ru genellikle doğrudan m3u8 formatı sağlar
+            m3u8_url = info.get('url')
+            title = info.get('title', 'Kurtlar Vadisi')
+            return {"title": title, "url": m3u8_url}
         except Exception as e:
-            print(f"❌ Playlist hatası: {e}")
-            return
+            print(f"Hata: {e}")
+            return None
 
-    # M3U İçeriğini Hazırla
-    m3u_content = "#EXTM3U\n"
-    m3u_content += f"#EXTREM: Bu liste {datetime.datetime.now()} tarihinde güncellendi.\n"
+# Örnek Link (Playlist veya tek video olabilir)
+video_urls = [
+    "https://ok.ru/video/11380833323681"
+]
 
-    success_count = 0
-    
-    for entry in entries:
-        if not entry: continue
-        
-        # 'extract_flat' kullandığımız için tam URL'yi oluşturmamız gerekebilir
-        video_url = entry.get('url')
-        if not video_url:
-            video_url = f"https://www.dailymotion.com/video/{entry.get('id')}"
+results = []
+for url in video_urls:
+    data = get_ok_ru_m3u8(url)
+    if data:
+        results.append(data)
 
-        print(f"⏳ İşleniyor: {entry.get('title', 'Bilinmeyen')}")
-        
-        # Her video için taze tokenlı linki al
-        stream_url, title = get_stream_link(video_url)
-        
-        if stream_url:
-            m3u_content += f"#EXTINF:-1 group-title=\"Dailymotion\",{title}\n"
-            m3u_content += f"{stream_url}\n"
-            success_count += 1
-    
-    # Dosyayı yaz
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        f.write(m3u_content)
+# M3U Formatında Kaydet
+with open("playlist.m3u", "w", encoding="utf-8") as f:
+    f.write("#EXTM3U\n")
+    for item in results:
+        f.write(f"#EXTINF:-1, {item['title']}\n")
+        f.write(f"{item['url']}\n")
 
-    print(f"\n✅ İşlem tamam! Toplam {success_count} kanal eklendi.")
+# JSON Formatında da Kaydet (Uygulaman için daha iyi olabilir)
+with open("links.json", "w", encoding="utf-8") as f:
+    json.dump(results, f, ensure_ascii=False, indent=4)
 
-if __name__ == "__main__":
-    generate_m3u()
+print("Linkler başarıyla güncellendi.")
